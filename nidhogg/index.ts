@@ -2,6 +2,13 @@ function startup() {
   addConsoleToDOM();
 }
 
+function newLogMessage(command: string): HTMLParagraphElement {
+  const line: HTMLParagraphElement = document.createElement("p");
+  line.textContent = command;
+  return line;
+}
+
+// todo classify!
 function addConsoleToDOM() {
   const nidhoggConsole: HTMLDivElement = document.createElement("div");
 
@@ -19,6 +26,7 @@ function addConsoleToDOM() {
   bttnExec.onclick = () => {
     const command: string = inputCommands.value;
     inputCommands.value = "";
+    containerOutput.appendChild(newLogMessage("> " + command));
     eval(command);
   };
   bttnExec.textContent = "run";
@@ -27,6 +35,36 @@ function addConsoleToDOM() {
   nidhoggConsole.appendChild(containerInput);
 
   document.body.appendChild(nidhoggConsole);
+
+  // define a new console
+  var console = (function (oldCons) {
+    return {
+      log: function (text: string) {
+        oldCons.log(text);
+        // Your code
+        containerOutput.appendChild(newLogMessage("< " + text));
+      },
+      info: function (text: string) {
+        oldCons.info(text);
+        // Your code
+        containerOutput.appendChild(newLogMessage("< " + text));
+      },
+      warn: function (text: string) {
+        oldCons.warn(text);
+        // Your code
+        containerOutput.appendChild(newLogMessage("< " + text));
+      },
+      error: function (text: string) {
+        oldCons.error(text);
+        // Your code
+        containerOutput.appendChild(newLogMessage("< " + text));
+      },
+    };
+  })(window.console);
+
+  //Then redefine the old console
+  //@ts-ignore we are cowboys! YEHAAA
+  window.console = console;
 }
 
 window.onload = () => startup();
