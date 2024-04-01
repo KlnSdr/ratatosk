@@ -1,6 +1,6 @@
 import express, { Application, request, response } from "express";
 import { config as dotEnvconfig } from "dotenv";
-import { Logger } from "./Logger";
+import { Logger } from "./util/Logger";
 
 dotEnvconfig();
 
