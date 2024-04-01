@@ -2,8 +2,12 @@ function startup() {
   addConsoleToDOM();
 }
 
-function newLogMessage(command: string): HTMLParagraphElement {
+function newLogMessage(
+  command: string,
+  clazz: string = "log"
+): HTMLParagraphElement {
   const line: HTMLParagraphElement = document.createElement("p");
+  line.classList.add(clazz);
   line.textContent = command;
   return line;
 }
@@ -47,17 +51,17 @@ function addConsoleToDOM() {
       info: function (text: string) {
         oldCons.info(text);
         // Your code
-        containerOutput.appendChild(newLogMessage("< " + text));
+        containerOutput.appendChild(newLogMessage("< " + text, "info"));
       },
       warn: function (text: string) {
         oldCons.warn(text);
         // Your code
-        containerOutput.appendChild(newLogMessage("< " + text));
+        containerOutput.appendChild(newLogMessage("< " + text, "warn"));
       },
       error: function (text: string) {
         oldCons.error(text);
         // Your code
-        containerOutput.appendChild(newLogMessage("< " + text));
+        containerOutput.appendChild(newLogMessage("< " + text, "error"));
       },
     };
   })(window.console);

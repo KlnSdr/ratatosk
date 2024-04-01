@@ -1,0 +1,16 @@
+.log {
+  background-color: gray;
+}
+
+.info {
+  background-color: blue;
+  color: white;
+}
+
+.warn {
+  background-color: orange;
+}
+
+.error {
+  background-color: red;
+}
