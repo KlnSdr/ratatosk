@@ -34,6 +34,7 @@ function startup() {
 
     socket.emit("ratatosk", {
       source: "eagle",
+      fuckapple: true,
       payload: {
         text: command,
         type: "command",

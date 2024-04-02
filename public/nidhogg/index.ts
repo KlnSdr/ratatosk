@@ -1,19 +1,24 @@
+const commandHistory: string[] = [];
+let commandHistoryOffset: number = 0;
+
 function startupNidhogg() {
   loadSocketIO();
   loadCss();
   setTimeout(() => {
     addConsoleToDOM();
-  }, 3000);
+  }, 1000);
 }
 
 function loadCss() {
-  var link = document.createElement("link");
-  link.href = "style.css";
-  link.type = "text/css";
-  link.rel = "stylesheet";
-  link.media = "screen,print";
+  ["/nidhogg/style.css"].forEach((file: string) => {
+    var link = document.createElement("link");
+    link.href = file;
+    link.type = "text/css";
+    link.rel = "stylesheet";
+    link.media = "screen,print";
 
-  document.getElementsByTagName("head")[0].appendChild(link);
+    document.getElementsByTagName("head")[0].appendChild(link);
+  });
 }
 
 function loadSocketIO() {
@@ -28,7 +33,7 @@ function newLogMessage(
   clazz: string = "log"
 ): HTMLParagraphElement {
   const line: HTMLParagraphElement = document.createElement("p");
-  line.classList.add(clazz);
+  line.classList.add("nidhoggReset", "nidhoggLogMessage", clazz);
   line.textContent = command;
   return line;
 }
@@ -42,16 +47,19 @@ function addConsoleToDOM() {
     // assume only commands are send
     socket.emit("ratatosk", {
       source: "nidhogg",
+      fuckapple: true,
       payload: {
         text: data.payload.text,
         type: "command",
       },
     });
     containerOutput.appendChild(newLogMessage("> " + data.payload.text));
+    commandHistory.push(data.payload.text);
     const result = eval(data.payload.text);
     containerOutput.appendChild(newLogMessage("> " + result));
     socket.emit("ratatosk", {
       source: "nidhogg",
+      fuckapple: true,
       payload: {
         text: result,
         type: "log",
@@ -60,23 +68,79 @@ function addConsoleToDOM() {
   });
 
   const nidhoggConsole: HTMLDivElement = document.createElement("div");
+  nidhoggConsole.classList.add(
+    "nidhoggReset",
+    "nidhoggConsole",
+    "nidhoggHidden"
+  );
+
+  // show/hide button ======================================================================
+  const showHideButton: HTMLButtonElement = document.createElement("button");
+  showHideButton.textContent = ">_";
+  showHideButton.classList.add("nidhoggReset", "nidhoggShowButton");
+  showHideButton.addEventListener("click", () => {
+    nidhoggConsole.classList.toggle("nidhoggHidden");
+  });
+  showHideButton.addEventListener("onlick", () => {
+    alert("ulala");
+  });
+  document.body.appendChild(showHideButton);
 
   // output ================================================================================
   const containerOutput: HTMLDivElement = document.createElement("div");
+  containerOutput.classList.add("nidhoggReset");
   nidhoggConsole.appendChild(containerOutput);
 
   // input =================================================================================
   const containerInput: HTMLDivElement = document.createElement("div");
+  containerInput.classList.add("nidhoggReset");
 
-  const inputCommands: HTMLInputElement = document.createElement("input");
+  const inputCommands: HTMLTextAreaElement = document.createElement("textarea");
+  inputCommands.classList.add("nidhoggCommandInput");
+  inputCommands.addEventListener("keydown", function (event) {
+    // Check if the pressed key is the up arrow key and if the textarea is focused
+    if (
+      event.ctrlKey &&
+      event.key === "ArrowUp" &&
+      document.activeElement === inputCommands
+    ) {
+      if (commandHistoryOffset < commandHistory.length) {
+        commandHistoryOffset++;
+      }
+
+      inputCommands.value =
+        commandHistory[commandHistory.length - commandHistoryOffset];
+    } else if (
+      event.ctrlKey &&
+      event.key === "ArrowDown" &&
+      document.activeElement === inputCommands
+    ) {
+      if (commandHistoryOffset > 1) {
+        commandHistoryOffset--;
+      }
+
+      inputCommands.value =
+        commandHistory[commandHistory.length - commandHistoryOffset];
+    } else if (
+      event.ctrlKey &&
+      event.key === "Enter" &&
+      document.activeElement === inputCommands
+    ) {
+      bttnExec.click();
+    }
+  });
   containerInput.appendChild(inputCommands);
 
   const bttnExec: HTMLButtonElement = document.createElement("button");
+  bttnExec.classList.add("nidhoggReset", "nidhoggRunButton");
   bttnExec.onclick = () => {
+    commandHistoryOffset = 0;
     const command: string = inputCommands.value;
+    commandHistory.push(command);
     inputCommands.value = "";
     socket.emit("ratatosk", {
       source: "nidhogg",
+      fuckapple: true,
       payload: {
         text: command,
         type: "command",
@@ -84,16 +148,18 @@ function addConsoleToDOM() {
     });
     containerOutput.appendChild(newLogMessage("> " + command));
     const result = eval(command);
-    containerOutput.appendChild(newLogMessage("> " + result));
+    containerOutput.appendChild(newLogMessage("< " + result));
     socket.emit("ratatosk", {
       source: "nidhogg",
+      fuckapple: true,
       payload: {
         text: result,
         type: "log",
       },
     });
+    inputCommands.focus();
   };
-  bttnExec.textContent = "run";
+  bttnExec.textContent = "/";
   containerInput.appendChild(bttnExec);
 
   nidhoggConsole.appendChild(containerInput);
@@ -109,6 +175,7 @@ function addConsoleToDOM() {
         containerOutput.appendChild(newLogMessage("< " + text));
         socket.emit("ratatosk", {
           source: "nidhogg",
+          fuckapple: true,
           payload: {
             text: text,
             type: "log",
@@ -121,6 +188,7 @@ function addConsoleToDOM() {
         containerOutput.appendChild(newLogMessage("< " + text, "info"));
         socket.emit("ratatosk", {
           source: "nidhogg",
+          fuckapple: true,
           payload: {
             text: text,
             type: "info",
@@ -133,6 +201,7 @@ function addConsoleToDOM() {
         containerOutput.appendChild(newLogMessage("< " + text, "warn"));
         socket.emit("ratatosk", {
           source: "nidhogg",
+          fuckapple: true,
           payload: {
             text: text,
             type: "warn",
@@ -145,6 +214,7 @@ function addConsoleToDOM() {
         containerOutput.appendChild(newLogMessage("< " + text, "error"));
         socket.emit("ratatosk", {
           source: "nidhogg",
+          fuckapple: true,
           payload: {
             text: text,
             type: "error",

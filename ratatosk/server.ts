@@ -10,6 +10,7 @@ interface obj {
 
 interface Message {
   source: string;
+  fuckapple: boolean;
   payload: { text: string; type: string };
 }
 
