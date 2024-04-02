@@ -2,11 +2,11 @@
   "name": "ratatosk",
   "version": "1.0.0",
   "description": "",
-  "main": "eagle/server.js",
+  "main": "ratatosk/server.js",
   "scripts": {
-    "start": "node eagle/server.js",
+    "start": "node ratatosk/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "cd eagle && tsc && cd ../nidhogg && tsc"
+    "compile": "cd ratatosk && tsc && cd ../nidhogg && tsc"
   },
   "author": "KlnSdr",
   "license": "ISC",

@@ -15,7 +15,7 @@ interface Message {
 
 dotEnvconfig();
 
-const LOGGER: Logger = new Logger("eagle.server");
+const LOGGER: Logger = new Logger("ratatosk.server");
 
 const PORT: number = parseInt(process.env.PORT || "3001");
 
