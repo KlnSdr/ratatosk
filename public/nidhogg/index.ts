@@ -1,5 +1,6 @@
 const commandHistory: string[] = [];
 let commandHistoryOffset: number = 0;
+let context: string = "nidhogg";
 
 function startupNidhogg() {
   loadSocketIO();
@@ -43,28 +44,53 @@ function addConsoleToDOM() {
   // @ts-ignore
   const socket: any = io.connect("/");
 
-  socket.on("nidhogg", (data: any) => {
-    // assume only commands are send
-    socket.emit("ratatosk", {
-      source: "nidhogg",
-      fuckapple: true,
-      payload: {
-        text: data.payload.text,
-        type: "command",
-      },
-    });
-    containerOutput.appendChild(newLogMessage("> " + data.payload.text));
-    commandHistory.push(data.payload.text);
-    const result = eval(data.payload.text);
-    containerOutput.appendChild(newLogMessage("> " + result));
-    socket.emit("ratatosk", {
-      source: "nidhogg",
-      fuckapple: true,
-      payload: {
-        text: result,
-        type: "log",
-      },
-    });
+  socket.on(context, (data: any) => {
+    if (context === "nidhogg") {
+      // assume only commands are send
+      socket.emit("ratatosk", {
+        source: context,
+        fuckapple: true,
+        payload: {
+          text: data.payload.text,
+          type: "command",
+        },
+      });
+      containerOutput.appendChild(newLogMessage("> " + data.payload.text));
+      commandHistory.push(data.payload.text);
+      const result = eval(data.payload.text);
+      containerOutput.appendChild(newLogMessage("> " + result));
+      socket.emit("ratatosk", {
+        source: context,
+        fuckapple: true,
+        payload: {
+          text: result,
+          type: "log",
+        },
+      });
+    } else {
+      switch (data.payload.type) {
+        case "command":
+          commandHistory.push(data.payload.text);
+          commandHistoryOffset = 0;
+          console.log(data.payload.text);
+          break;
+        case "log":
+          console.log(data.payload.text);
+          break;
+        case "info":
+          console.info(data.payload.text);
+          break;
+        case "warn":
+          console.warn(data.payload.text);
+          break;
+        case "error":
+          console.error(data.payload.text);
+          break;
+        default:
+          console.error("UNKNOWN LOG TYPE " + data.payload.type);
+          break;
+      }
+    }
   });
 
   const nidhoggConsole: HTMLDivElement = document.createElement("div");
@@ -76,6 +102,7 @@ function addConsoleToDOM() {
 
   // show/hide button ======================================================================
   const showHideButton: HTMLButtonElement = document.createElement("button");
+  showHideButton.id = "nidhoggShowButton";
   showHideButton.textContent = ">_";
   showHideButton.classList.add("nidhoggReset", "nidhoggShowButton");
   showHideButton.addEventListener("click", () => {
@@ -138,25 +165,36 @@ function addConsoleToDOM() {
     const command: string = inputCommands.value;
     commandHistory.push(command);
     inputCommands.value = "";
-    socket.emit("ratatosk", {
-      source: "nidhogg",
-      fuckapple: true,
-      payload: {
-        text: command,
-        type: "command",
-      },
-    });
-    containerOutput.appendChild(newLogMessage("> " + command));
-    const result = eval(command);
-    containerOutput.appendChild(newLogMessage("< " + result));
-    socket.emit("ratatosk", {
-      source: "nidhogg",
-      fuckapple: true,
-      payload: {
-        text: result,
-        type: "log",
-      },
-    });
+    if (context === "nidhogg") {
+      socket.emit("ratatosk", {
+        source: context,
+        fuckapple: true,
+        payload: {
+          text: command,
+          type: "command",
+        },
+      });
+      containerOutput.appendChild(newLogMessage("> " + command));
+      const result = eval(command);
+      containerOutput.appendChild(newLogMessage("< " + result));
+      socket.emit("ratatosk", {
+        source: "nidhogg",
+        fuckapple: true,
+        payload: {
+          text: result,
+          type: "log",
+        },
+      });
+    } else {
+      socket.emit("ratatosk", {
+        source: context,
+        fuckapple: true,
+        payload: {
+          text: command,
+          type: "command",
+        },
+      });
+    }
     inputCommands.focus();
   };
   bttnExec.textContent = "/";
@@ -173,53 +211,61 @@ function addConsoleToDOM() {
         oldCons.log(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text));
-        socket.emit("ratatosk", {
-          source: "nidhogg",
-          fuckapple: true,
-          payload: {
-            text: text,
-            type: "log",
-          },
-        });
+        if (context === "nidhogg") {
+          socket.emit("ratatosk", {
+            source: context,
+            fuckapple: true,
+            payload: {
+              text: text,
+              type: "log",
+            },
+          });
+        }
       },
       info: function (text: string) {
         oldCons.info(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "info"));
-        socket.emit("ratatosk", {
-          source: "nidhogg",
-          fuckapple: true,
-          payload: {
-            text: text,
-            type: "info",
-          },
-        });
+        if (context === "nidhogg") {
+          socket.emit("ratatosk", {
+            source: context,
+            fuckapple: true,
+            payload: {
+              text: text,
+              type: "info",
+            },
+          });
+        }
       },
       warn: function (text: string) {
         oldCons.warn(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "warn"));
-        socket.emit("ratatosk", {
-          source: "nidhogg",
-          fuckapple: true,
-          payload: {
-            text: text,
-            type: "warn",
-          },
-        });
+        if (context === "nidhogg") {
+          socket.emit("ratatosk", {
+            source: context,
+            fuckapple: true,
+            payload: {
+              text: text,
+              type: "warn",
+            },
+          });
+        }
       },
       error: function (text: string) {
         oldCons.error(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "error"));
-        socket.emit("ratatosk", {
-          source: "nidhogg",
-          fuckapple: true,
-          payload: {
-            text: text,
-            type: "error",
-          },
-        });
+        if (context === "nidhogg") {
+          socket.emit("ratatosk", {
+            source: context,
+            fuckapple: true,
+            payload: {
+              text: text,
+              type: "error",
+            },
+          });
+        }
       },
     };
   })(window.console);

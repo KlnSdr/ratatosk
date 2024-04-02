@@ -1,5 +1,11 @@
 .nidhoggReset {
   all: unset;
+  outline: none;
+}
+
+.nidhoggReset:focus,
+.nidhoggCommandInput:focus {
+  outline: none;
 }
 
 .nidhoggConsole {
