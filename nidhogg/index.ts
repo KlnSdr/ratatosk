@@ -42,7 +42,8 @@ function addConsoleToDOM() {
     const command: string = inputCommands.value;
     inputCommands.value = "";
     containerOutput.appendChild(newLogMessage("> " + command));
-    eval(command);
+    const result = eval(command);
+    containerOutput.appendChild(newLogMessage("> " + result));
   };
   bttnExec.textContent = "run";
   containerInput.appendChild(bttnExec);
