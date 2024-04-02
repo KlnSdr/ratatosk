@@ -22,6 +22,7 @@ const PORT: number = parseInt(process.env.PORT || "3001");
 const app: Application = express();
 app.use(express.json());
 app.use(express.static("nidhogg"));
+app.use(express.static("eagle"));
 app.use(express.urlencoded({ extended: true }));
 
 LOGGER.info("setting up websocket server...");
@@ -29,10 +30,14 @@ const httpServer: Server = require("http").Server(app);
 const io = require("socket.io")(httpServer);
 
 io.on("connection", (socket: Socket) => {
-  socket.on("upstream", (data: Message) => {
+  LOGGER.debug("connected");
+  socket.on("ratatosk", (data: Message) => {
     if (data.source != "nidhogg") {
+      io.emit("nidhogg", data);
       return;
     }
+
+    io.emit("eagle", data);
 
     if (data.payload.type === "command") {
       LOGGER.info("> " + data.payload.text);

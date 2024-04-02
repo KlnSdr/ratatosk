@@ -5,8 +5,10 @@
   "main": "ratatosk/server.js",
   "scripts": {
     "start": "node ratatosk/server.js",
+    "ratatosk": "node ratatosk/server.js",
+    "eagle": "node eagle/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "cd ratatosk && tsc && cd ../nidhogg && tsc"
+    "compile": "cd ratatosk && tsc && cd ../nidhogg && tsc && cd ../eagle && tsc"
   },
   "author": "KlnSdr",
   "license": "ISC",

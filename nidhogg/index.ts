@@ -38,6 +38,27 @@ function addConsoleToDOM() {
   // @ts-ignore
   const socket: any = io.connect("/");
 
+  socket.on("nidhogg", (data: any) => {
+    // assume only commands are send
+    socket.emit("ratatosk", {
+      source: "nidhogg",
+      payload: {
+        text: data.payload.text,
+        type: "command",
+      },
+    });
+    containerOutput.appendChild(newLogMessage("> " + data.payload.text));
+    const result = eval(data.payload.text);
+    containerOutput.appendChild(newLogMessage("> " + result));
+    socket.emit("ratatosk", {
+      source: "nidhogg",
+      payload: {
+        text: result,
+        type: "log",
+      },
+    });
+  });
+
   const nidhoggConsole: HTMLDivElement = document.createElement("div");
 
   // output ================================================================================
@@ -54,7 +75,7 @@ function addConsoleToDOM() {
   bttnExec.onclick = () => {
     const command: string = inputCommands.value;
     inputCommands.value = "";
-    socket.emit("upstream", {
+    socket.emit("ratatosk", {
       source: "nidhogg",
       payload: {
         text: command,
@@ -64,7 +85,7 @@ function addConsoleToDOM() {
     containerOutput.appendChild(newLogMessage("> " + command));
     const result = eval(command);
     containerOutput.appendChild(newLogMessage("> " + result));
-    socket.emit("upstream", {
+    socket.emit("ratatosk", {
       source: "nidhogg",
       payload: {
         text: result,
@@ -86,7 +107,7 @@ function addConsoleToDOM() {
         oldCons.log(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text));
-        socket.emit("upstream", {
+        socket.emit("ratatosk", {
           source: "nidhogg",
           payload: {
             text: text,
@@ -98,7 +119,7 @@ function addConsoleToDOM() {
         oldCons.info(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "info"));
-        socket.emit("upstream", {
+        socket.emit("ratatosk", {
           source: "nidhogg",
           payload: {
             text: text,
@@ -110,7 +131,7 @@ function addConsoleToDOM() {
         oldCons.warn(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "warn"));
-        socket.emit("upstream", {
+        socket.emit("ratatosk", {
           source: "nidhogg",
           payload: {
             text: text,
@@ -122,7 +143,7 @@ function addConsoleToDOM() {
         oldCons.error(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "error"));
-        socket.emit("upstream", {
+        socket.emit("ratatosk", {
           source: "nidhogg",
           payload: {
             text: text,
