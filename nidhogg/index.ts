@@ -25,6 +25,9 @@ function newLogMessage(
 
 // todo classify!
 function addConsoleToDOM() {
+  // @ts-ignore
+  const socket: any = io.connect("/");
+
   const nidhoggConsole: HTMLDivElement = document.createElement("div");
 
   // output ================================================================================
@@ -41,9 +44,23 @@ function addConsoleToDOM() {
   bttnExec.onclick = () => {
     const command: string = inputCommands.value;
     inputCommands.value = "";
+    socket.emit("upstream", {
+      source: "nidhogg",
+      payload: {
+        text: command,
+        type: "command",
+      },
+    });
     containerOutput.appendChild(newLogMessage("> " + command));
     const result = eval(command);
     containerOutput.appendChild(newLogMessage("> " + result));
+    socket.emit("upstream", {
+      source: "nidhogg",
+      payload: {
+        text: result,
+        type: "log",
+      },
+    });
   };
   bttnExec.textContent = "run";
   containerInput.appendChild(bttnExec);
@@ -59,21 +76,49 @@ function addConsoleToDOM() {
         oldCons.log(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text));
+        socket.emit("upstream", {
+          source: "nidhogg",
+          payload: {
+            text: text,
+            type: "log",
+          },
+        });
       },
       info: function (text: string) {
         oldCons.info(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "info"));
+        socket.emit("upstream", {
+          source: "nidhogg",
+          payload: {
+            text: text,
+            type: "info",
+          },
+        });
       },
       warn: function (text: string) {
         oldCons.warn(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "warn"));
+        socket.emit("upstream", {
+          source: "nidhogg",
+          payload: {
+            text: text,
+            type: "warn",
+          },
+        });
       },
       error: function (text: string) {
         oldCons.error(text);
         // Your code
         containerOutput.appendChild(newLogMessage("< " + text, "error"));
+        socket.emit("upstream", {
+          source: "nidhogg",
+          payload: {
+            text: text,
+            type: "error",
+          },
+        });
       },
     };
   })(window.console);
