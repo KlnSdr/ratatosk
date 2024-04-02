@@ -18,11 +18,16 @@ dotEnvconfig();
 const LOGGER: Logger = new Logger("ratatosk.server");
 
 const PORT: number = parseInt(process.env.PORT || "3001");
+const TARGET: string | null = process.env.STATIC_DIR || null;
 
 const app: Application = express();
 app.use(express.json());
-app.use(express.static("nidhogg"));
-app.use(express.static("eagle"));
+app.use(express.static("public"));
+if (TARGET == null) {
+  LOGGER.error("no static dir given, abort");
+  process.exit(1);
+}
+app.use(express.static(TARGET));
 app.use(express.urlencoded({ extended: true }));
 
 LOGGER.info("setting up websocket server...");

@@ -8,7 +8,7 @@
     "ratatosk": "node ratatosk/server.js",
     "eagle": "node eagle/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "cd ratatosk && tsc && cd ../nidhogg && tsc && cd ../eagle && tsc"
+    "compile": "cd ratatosk && tsc && cd ../public/nidhogg && tsc && cd ../eagle && tsc"
   },
   "author": "KlnSdr",
   "license": "ISC",

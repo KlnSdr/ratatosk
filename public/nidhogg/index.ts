@@ -1,4 +1,4 @@
-function startup() {
+function startupNidhogg() {
   loadSocketIO();
   loadCss();
   setTimeout(() => {
@@ -159,4 +159,6 @@ function addConsoleToDOM() {
   window.console = console;
 }
 
-window.onload = () => startup();
+window.addEventListener("load", () => {
+  startupNidhogg();
+});
