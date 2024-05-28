@@ -2,12 +2,8 @@ import express, { Application, Request, Response } from "express";
 import { config as dotEnvconfig } from "dotenv";
 import { Logger } from "./util/Logger";
 import { Socket } from "socket.io";
-import http, { Server } from "http";
+import { Server } from "http";
 import fs from "fs";
-
-interface obj {
-  [key: string]: any;
-}
 
 interface Message {
   source: string;
