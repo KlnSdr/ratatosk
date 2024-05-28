@@ -2,8 +2,8 @@ import express, { Application, Request, Response } from "express";
 import { config as dotEnvconfig } from "dotenv";
 import { Logger } from "./util/Logger";
 import { Socket } from "socket.io";
-import { Server } from "http";
-import fs from "fs";
+import { Server, IncomingMessage, ClientRequest } from "http";
+import { createProxyMiddleware, responseInterceptor } from "http-proxy-middleware";
 
 interface Message {
   source: string;
@@ -16,15 +16,16 @@ dotEnvconfig();
 const LOGGER: Logger = new Logger("ratatosk.server");
 
 const PORT: number = parseInt(process.env.PORT || "3001");
-const STATIC_DIR: string | null = process.env.STATIC_DIR || null;
+const TARGET_SERVER: string | null = process.env.TARGET_SERVER || null;
+
+if (TARGET_SERVER == null) {
+  LOGGER.error("invalid config given, abort");
+  process.exit(1);
+}
 
 const app: Application = express();
 app.use(express.json());
 app.use(express.static("public"));
-if (STATIC_DIR == null) {
-  LOGGER.error("no static dir given, abort");
-  process.exit(1);
-}
 app.use(express.urlencoded({ extended: true }));
 
 LOGGER.info("setting up websocket server...");
@@ -65,43 +66,40 @@ io.on("connection", (socket: Socket) => {
   });
 });
 
-app.get("*", (req: Request, res: Response) => {
-  let url: string = req.url;
+async function proxyInterceptor(responseBuffer: Buffer, proxyResponse: IncomingMessage, req: Request, res: Response) {
+    const contentType = proxyResponse.headers['content-type'];
 
-  if (url === "/") {
-    url = "/index.html";
+  if (contentType && contentType.includes('text/html')) {
+    let responseBody = responseBuffer.toString('utf-8');
+    responseBody = responseBody.replace(
+      '<head>',
+      '<head><script src="/nidhogg/index.js"></script>'
+    );
+    return responseBody;
   }
 
-  const path: string = STATIC_DIR + url;
-  fs.readFile(path, { encoding: "utf-8" }, function (err, data) {
-    if (!err) {
-      const contentType: string = (() => {
-        if (url.endsWith("html")) {
-          return "text/html";
-        } else if (url.endsWith("css")) {
-          return "text/css";
-        } else if (url.endsWith("js")) {
-          return "text/javascript";
+  return responseBuffer;
+}
+
+const proxyMiddleware = createProxyMiddleware({
+    target: TARGET_SERVER,
+    changeOrigin: true,
+    selfHandleResponse: true,
+    pathFilter: (_path: string, req: Request): boolean => {
+        return !req.originalUrl.startsWith("/eagle")
+    },
+    pathRewrite: (_path: string, req: Request): string => {
+        return req.originalUrl;
+    },
+    on: {
+        proxyRes: responseInterceptor(proxyInterceptor),
+        proxyReq: (_proxyReq: ClientRequest, req: Request, _res: Response) => {
+          LOGGER.debug(`Proxying request to: ${TARGET_SERVER}${req.originalUrl}`);
         }
-        return "";
-      })();
-      res.writeHead(200, { "Content-Type": contentType });
-      if (url.endsWith("html")) {
-        res.write(
-          data.replace(
-            "<head>",
-            '<head><script src="/nidhogg/index.js"></script>'
-          )
-        );
-      } else {
-        res.write(data);
-      }
-      res.end();
-    } else {
-      res.sendStatus(404);
     }
-  });
 });
+
+app.use("*", proxyMiddleware);
 
 httpServer.listen(PORT, "0.0.0.0", () => {
   LOGGER.info(`listening on port ${PORT}...`);
